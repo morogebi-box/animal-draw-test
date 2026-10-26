@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ページを開くたびに、ランダムな生き物が1匹現れる検証用ページです。">
+  <title>今日の生き物箱｜検証用</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, -apple-system, "Noto Sans JP", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #17221d; color: #f4f1e8; padding: 24px; }
+    main { width: min(100%, 620px); text-align: center; border: 1px solid #63776a; border-radius: 24px; padding: clamp(24px, 6vw, 48px); background: #24352c; box-shadow: 0 18px 50px #0004; }
+    .eyebrow { letter-spacing: .16em; font-size: .8rem; color: #c5d4bd; }
+    h1 { margin: 12px 0 8px; font-size: clamp(1.7rem, 5vw, 2.5rem); }
+    .intro { color: #d8dfd3; line-height: 1.8; }
+    .animal { font-size: clamp(4rem, 18vw, 7rem); line-height: 1.25; margin: 26px 0 8px; }
+    h2 { font-size: clamp(1.5rem, 5vw, 2rem); margin: 0 0 12px; }
+    .description { min-height: 3em; font-size: 1.1rem; line-height: 1.8; }
+    button { margin-top: 18px; padding: 12px 24px; border: 0; border-radius: 999px; background: #d6e2bf; color: #1b2b21; font: inherit; font-weight: 700; cursor: pointer; }
+    button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+    .note { margin-top: 24px; font-size: .82rem; color: #bdcabb; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">RANDOM CREATURE TEST</div>
+    <h1>今日の生き物箱</h1>
+    <p class="intro">ページを開くたびに、箱の中から生き物が1匹選ばれます。</p>
+    <div id="emoji" class="animal" aria-hidden="true">📦</div>
+    <h2 id="name">生き物を探しています…</h2>
+    <p id="description" class="description" aria-live="polite">箱を開けています。</p>
+    <button id="again" type="button">もう一度、箱を開ける</button>
+    <p class="note">検証用：抽選はこのページ内のJavaScriptで行います。</p>
+  </main>
+  <script>
+    const creatures = [
+      {name:"ナマケモノ",emoji:"🦥",description:"急ぐ理由は特にありません。"},
+      {name:"渡り鳥",emoji:"🐦",description:"どこかへ向かっている気がします。"},
+      {name:"深海魚",emoji:"🐟",description:"光の届かない場所にも、あなたはいます。"},
+      {name:"カピバラ",emoji:"🦫",description:"だいたい大丈夫そうです。"},
+      {name:"ミミズ",emoji:"🪱",description:"地面の下にも世界はあります。"},
+      {name:"タコ",emoji:"🐙",description:"手は足りています。たぶん。"},
+      {name:"ハシビロコウ",emoji:"🐦",description:"動かないことが、今日の仕事です。"},
+      {name:"ウーパールーパー",emoji:"🦎",description:"ずっと笑っているように見えます。"},
+      {name:"ダンゴムシ",emoji:"🪲",description:"丸くなるのは、ただの気分です。"},
+      {name:"クラゲ",emoji:"🪼",description:"流されているのではなく、漂っています。"},
+      {name:"カモノハシ",emoji:"🦆",description:"自分でも、何なのかよくわかっていません。"},
+      {name:"フクロウ",emoji:"🦉",description:"首だけは、ずいぶん回ります。"},
+      {name:"ナマコ",emoji:"🥒",description:"とりあえず、そこにいます。"},
+      {name:"カワウソ",emoji:"🦦",description:"石を持っています。理由はありません。"},
+      {name:"カメレオン",emoji:"🦎",description:"目が左右別々に忙しいです。"},
+      {name:"アリ",emoji:"🐜",description:"小さな荷物を、大きな顔で運びます。"},
+      {name:"ペンギン",emoji:"🐧",description:"歩き方に、少し自信があります。"},
+      {name:"コウモリ",emoji:"🦇",description:"世界が逆さまでも、問題ありません。"},
+      {name:"ヤドカリ",emoji:"🐚",description:"引っ越し先を、そっと探しています。"},
+      {name:"マンボウ",emoji:"🐡",description:"今日も、ひなたぼっこ日和です。"},
+      {name:"モグラ",emoji:"🐾",description:"掘ります。とにかく掘ります。"},
+      {name:"アルマジロ",emoji:"🦔",description:"丸まるかどうかは、直前に決めます。"},
+      {name:"カタツムリ",emoji:"🐌",description:"家ごと移動するので、忘れ物はありません。"},
+      {name:"キツネ",emoji:"🦊",description:"コンと鳴くかは、まだ秘密です。"},
+      {name:"カエル",emoji:"🐸",description:"雨の気配だけ、なんとなくわかります。"},
+      {name:"ラッコ",emoji:"🦦",description:"お気に入りの石を、脇に挟んでいます。"},
+      {name:"ハリネズミ",emoji:"🦔",description:"ふくらむと、ちょっとだけ大きく見えます。"},
+      {name:"イカ",emoji:"🦑",description:"夜になると、少し光りたくなります。"},
+      {name:"フラミンゴ",emoji:"🦩",description:"片足で立つのは、休憩中だからです。"},
+      {name:"シーラカンス",emoji:"🐠",description:"長い間、特に変わっていません。"}
+    ];
+
+    function drawCreature() {
+      const index = Math.floor(Math.random() * creatures.length);
+      const creature = creatures[index];
+      document.getElementById("emoji").textContent = creature.emoji;
+      document.getElementById("name").textContent = creature.name;
+      document.getElementById("description").textContent = creature.description;
+      document.title = `${creature.name}｜今日の生き物箱`;
+      document.querySelector('meta[name="description"]').content = `${creature.name}。${creature.description}`;
+      document.documentElement.dataset.creature = creature.name;
+    }
+    document.getElementById("again").addEventListener("click", drawCreature);
+    drawCreature();
+  </script>
+</body>
+</html>
